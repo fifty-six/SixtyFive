@@ -17,10 +17,10 @@
 
     <ItemGroup>
       <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
-      <PackageReference Include="Disqord" Version="1.0.0-10022021-130" />
-      <PackageReference Include="Disqord.Bot" Version="1.0.0-10022021-130" />
-      <PackageReference Include="Disqord.Core" Version="1.0.0-10022021-130" />
-      <PackageReference Include="JetBrains.Annotations" Version="2021.3.0-eap4" />
+      <PackageReference Include="Disqord" Version="1.0.0-12282021-164" />
+      <PackageReference Include="Disqord.Bot" Version="1.0.0-12282021-164" />
+      <PackageReference Include="Disqord.Core" Version="1.0.0-12282021-164" />
+      <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
       <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.0.0-4.final" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0-rc.1.21451.13" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0-preview.3.21201.4" />

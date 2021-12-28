@@ -79,15 +79,15 @@ namespace SixtyFive.Util
             if (copy_type != Copy.CopyAttachments)
                 return msg.WithEmbeds(embed);
 
-            if (pin.Embeds.FirstOrDefault(x => !string.IsNullOrEmpty(x.Image?.Url)) is Embed image)
+            if (pin.Embeds.FirstOrDefault(x => !string.IsNullOrEmpty(x.Image?.Url)) is IEmbed image)
                 embed.WithImageUrl(image.Image.Url);
-            else if (pin.Embeds.FirstOrDefault(x => x.Type == "image") is Embed url_image)
+            else if (pin.Embeds.FirstOrDefault(x => x.Type == "image") is IEmbed url_image)
                 embed.WithImageUrl(url_image.Url);
 
             if (!pin.Attachments.Any())
                 return msg.WithEmbeds(embed);
 
-            foreach (Attachment attachment in pin.Attachments)
+            foreach (IAttachment attachment in pin.Attachments)
             {
                 if (attachment.ContentType?.StartsWith("image/") ?? false)
                     embed.WithImageUrl(attachment.ProxyUrl);
