@@ -2,6 +2,7 @@
 using System.IO;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
@@ -18,7 +19,7 @@ namespace SixtyFive
     public static class Program
     {
         private static readonly string ConfigRoot = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME")
-            ?? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            ?? Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create);
 
         private static string GetOrCreateConfigPath()
         {
