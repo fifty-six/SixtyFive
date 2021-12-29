@@ -22,7 +22,7 @@ namespace SixtyFive
 
         private static string GetOrCreateConfigPath()
         {
-            string path = Path.Combine(ConfigRoot, "SixtyFive");
+            string path = Path.GetFullPath(Path.Combine(ConfigRoot, "SixtyFive"));
 
             if (Directory.Exists(path))
                 return path;
