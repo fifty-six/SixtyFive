@@ -5,6 +5,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
+using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
@@ -14,7 +16,9 @@ using Disqord.Http;
 using Disqord.Rest;
 using JetBrains.Annotations;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
+using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Scripting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -28,9 +32,11 @@ namespace SixtyFive.Modules
     [RequireBotOwner]
     public class Owner : DiscordModuleBase<CommandContext>
     {
-        private static readonly IEnumerable<string> IMPORTS = new[] {
+        private static readonly IEnumerable<string> IMPORTS = new[]
+        {
             "System",
             "System.Collections",
+            "System.Collections.Generic",
             "System.Text",
             "System.Threading.Tasks",
             "System.Linq",
@@ -55,10 +61,15 @@ namespace SixtyFive.Modules
             "Newtonsoft.Json"
         };
 
-        internal static readonly ScriptOptions _options = ScriptOptions.Default
-                                                                       .AddReferences(AppDomain.CurrentDomain.GetAssemblies().Select(x => x.FullName))
-                                                                       .WithOptimizationLevel(OptimizationLevel.Release)
-                                                                       .AddImports(IMPORTS);
+        internal static readonly CSharpCompilationOptions _options = new (OutputKind.DynamicallyLinkedLibrary, usings: IMPORTS);
+
+        internal static readonly List<MetadataReference> _refs = new
+        (
+            AppDomain.CurrentDomain.GetAssemblies()
+                     .Where(x => !x.IsDynamic && !string.IsNullOrWhiteSpace(x.Location))
+                     .Select(x => MetadataReference.CreateFromFile(x.Location))
+                     .ToList()
+        );
 
         [Command("quit")]
         public async Task Quit()
@@ -218,50 +229,94 @@ namespace SixtyFive.Modules
         {
             msg = Util.Utilities.ExtractCode(msg);
 
-            Script<object> script = CSharpScript.Create
+            var comp = CSharpCompilation.CreateScriptCompilation
             (
-                msg,
-                _options,
-                typeof(RoslynContext<Owner>)
+                "assembly_of_suicide",
+                CSharpSyntaxTree.ParseText
+                (
+                    msg,
+                    CSharpParseOptions.Default
+                                      .WithKind(SourceCodeKind.Script)
+                                      .WithLanguageVersion(LanguageVersion.Latest)
+                ),
+                _refs, 
+                _options, 
+                globalsType: typeof(RoslynContext<Owner>)
             );
 
-            ImmutableArray<Diagnostic> diagnostics = script.Compile();
+            ImmutableArray<Diagnostic> diagnostics = comp.GetDiagnostics(); // script.Compile();
 
             Diagnostic[] err = diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error).ToArray();
 
             if (err.Length != 0)
             {
-                var embed = new LocalEmbed {
+                var err_embed = new LocalEmbed
+                {
                     Title = "Compilation failed.",
                     Description = string.Join("\n", err.Select(x => $"({x.Location.GetLineSpan().StartLinePosition}): [{x.Id}] {x.GetMessage()}")),
                     Color = Color.Red
                 };
 
-                return new Err(embed);
+                return new Err(err_embed);
             }
 
             Task<IUserMessage> ResponseUnchecked(string str) => Context.Channel.SendMessageAsync(new LocalMessage().WithContent(str));
 
-            ScriptState<object> res = await script.RunAsync
-            (
-                new RoslynContext<Owner>
-                (
-                    this,
-                    Context,
-                    async reply => await ResponseUnchecked(reply),
-                    async reply => await Response(new LocalMessage().WithEmbeds(reply))
-                ),
-                _ => true
-            );
+            var ctx = new AssemblyLoadContext("sussy", true);
 
-            if (res.Exception != null)
+            try
             {
-                return Err.AsCodeBlock(res.Exception.ToString(), "cs");
-            }
+                await using var mem = new MemoryStream();
 
-            return res.ReturnValue != null
-                ? new Ok(res.ReturnValue.Inspect())
-                : new Ok();
+                EmitResult emit_res = comp.Emit(mem);
+
+                if (!emit_res.Success)
+                    return new Err("Compilation failed despite no diagnostics?");
+
+                mem.Position = 0;
+
+                Assembly asm = ctx.LoadFromStream(mem);
+
+                IMethodSymbol? entry = comp.GetEntryPoint(CancellationToken.None);
+
+                if (entry is null)
+                    return new Err("Missing entry point!");
+
+                Type? type = asm.GetType($"{entry.ContainingNamespace.MetadataName}.{entry.ContainingType.MetadataName}");
+
+                MethodInfo? mi = type?.GetMethod(entry.MetadataName);
+
+                if (mi is null)
+                    return new Err($"Couldn't find entry point! Type: {type?.Name ?? "null"} Method: {mi?.Name ?? "null"}");
+
+                var del = mi.CreateDelegate<Func<object?[], Task<object?>>>();
+
+                object? res;
+                try
+                {
+                    res = await del
+                    (
+                        new object?[]
+                        {
+                            new RoslynContext<Owner>(this, Context, async x => await ResponseUnchecked(x), async x => await Response(x)),
+                            null
+                        }
+                    );
+                }
+                catch (Exception e)
+                {
+                    return Err.AsCodeBlock(e.ToString(), "cs");
+                }
+
+                return res is not null
+                    ? new Ok(res.Inspect())
+                    : new Ok();
+            }
+            finally
+            {
+                // This will take until a GC.
+                ctx.Unload();
+            }
         }
     }
 }

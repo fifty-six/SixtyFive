@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.Loader;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -32,7 +33,10 @@ namespace SixtyFive.Modules
         [Command("disasm", "disassemble")]
         public async Task<Result> Diassemble([Remainder] string code)
         {
+            /*
             code = Util.Utilities.ExtractCode(code);
+            
+                await Reply($"Loaded before create {AppDomain.CurrentDomain.GetAssemblies().Length}");
 
             Script<object> script = CSharpScript.Create
             (
@@ -56,48 +60,65 @@ namespace SixtyFive.Modules
                 return new Err(embed);
             }
 
-            var stream = new MemoryStream();
+            var ctx = new AssemblyLoadContext("disasemble_ctx", true);
 
-            EmitResult emit = script.GetCompilation().Emit(stream);
-
-            if (!emit.Success)
-                return Err.AsEmbed("Failed to emit to MemoryStream.");
-
-            Assembly asm = Assembly.Load(stream.ToArray());
-
-            const BindingFlags all = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
-
-            MethodInfo? mi = asm.GetTypes().Select(x => x.GetMethod("Disassemble", all)).FirstOrDefault();
-
-            if (mi is null)
-                return Err.AsEmbed("Unable to find entry point method `Disassemble`.");
-
-            string res = Disassembler.DisassembleMethod(mi);
-
-            string[] lines = res.Split("\n");
-
-            var sb = new StringBuilder();
-
-            foreach (string line in lines)
+            try
             {
-                if (sb.Length + line.Length < 1980)
+                await using var stream = new MemoryStream();
+
+                EmitResult emit = script.GetCompilation().Emit(stream);
+
+                if (!emit.Success)
+                    return Err.AsEmbed("Failed to emit to MemoryStream.");
+
+                Assembly asm = ctx.LoadFromStream(stream);
+
+                const BindingFlags all = BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static;
+
+                MethodInfo? mi = asm.GetTypes().Select(x => x.GetMethod("Disassemble", all)).FirstOrDefault();
+
+                if (mi is null)
+                    return Err.AsEmbed("Unable to find entry point method `Disassemble`.");
+
+                string res = Disassembler.DisassembleMethod(mi);
+
+                string[] lines = res.Split("\n");
+
+                var sb = new StringBuilder();
+
+                foreach (string line in lines)
                 {
-                    sb.Append(line);
+                    if (sb.Length + line.Length < 1980)
+                    {
+                        sb.Append(line);
+                    }
+                    else
+                    {
+                        await Response("```x86asm\n" + sb + "```");
+
+                        sb.Clear();
+
+                        sb.Append(line);
+                    }
                 }
-                else
-                {
+
+                if (sb.Length != 0)
                     await Response("```x86asm\n" + sb + "```");
 
-                    sb.Clear();
-
-                    sb.Append(line);
-                }
+                return new Ok();
             }
-
-            if (sb.Length != 0)
-                await Response("```x86asm\n" + sb + "```");
-
-            return new Ok();
+            finally
+            {
+                await Reply($"Loaded before unload {AppDomain.CurrentDomain.GetAssemblies().Length}");
+                
+                ctx.Unload();
+                
+                await Reply($"Loaded after {AppDomain.CurrentDomain.GetAssemblies().Length}");
+            }
+            */
+            // shut
+            await Task.Yield();
+            return new Err("NotImplemented");
         }
 
         [PublicAPI, Group("godbolt")]
