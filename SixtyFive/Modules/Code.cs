@@ -251,7 +251,9 @@ namespace SixtyFive.Modules
                 // Failed compilation.
                 if (obj.Code != 0)
                 {
-                    string output = string.Join("\n", obj.Stderr.Select(x => x.Text));
+                    string output = obj.Stderr.Count != 0 
+                        ? string.Join("\n", obj.Stderr.Select(x => x.Text))
+                        : string.Join("\n", obj.Stdout.Select(x => x.Text));
 
                     // Strip out color codes
                     output = Regex.Replace(output, "\u001b\\[.*?m", string.Empty);
@@ -259,8 +261,25 @@ namespace SixtyFive.Modules
                     return Err.AsCodeBlock("<Compilation Failed>\n\n" + output, "c");
                 }
 
-                string?[] comp = obj.Asm.Where((x, ind) => x.Source?.MainSource ?? ind + 1 < obj.Asm.Count && (obj.Asm[ind + 1].Source?.MainSource ?? false)).Select(x => x.Text).ToArray();
-                
+                var checkSrc = obj.Asm.Any(x => x.Source?.MainSource ?? false);
+
+                bool CheckIsMain(Asm line, int ind) {
+                    if (line.Source?.MainSource is bool main)
+                        return main;
+
+                    // Check the next line to see if it's part of the main source instead
+                    // As some lines were omitted without this
+                    if (ind + 1 >= obj.Asm.Count)
+                        return false;
+
+                    return obj.Asm[ind + 1].Source?.MainSource ?? false;
+
+                }
+
+                string?[] comp = obj.Asm
+                    .Where((x, ind) => !checkSrc || CheckIsMain(x, ind))
+                    .Select(x => x.Text).ToArray();
+
                 return Ok.AsCodeBlock(string.Join("\n", comp), "x86asm");
             }
 
