@@ -31,6 +31,26 @@ namespace SixtyFive.Modules
             return new Ok("i'm gonna end it all");
         }
 
+        [Command("remind")]
+        public async Task<Result> Remind(string time) 
+        {
+            if (!TimeSpan.TryParse(time, out var ts))
+                return Err.AsEmbed("Unable to parse time!");
+
+            await Task.Delay((int) ts.TotalMilliseconds);
+
+            var msg = new LocalMessage()
+              .WithContent("made you look")
+              .WithAllowedMentions(
+                    new LocalAllowedMentions()
+                      .WithMentionRepliedUser()
+              );
+
+            await Reply(msg);
+
+            return new Ok();
+        }
+
         [Command("help")]
         public Result Help()
         {
