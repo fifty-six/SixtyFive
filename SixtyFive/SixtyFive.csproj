@@ -17,9 +17,9 @@
 
     <ItemGroup>
       <PackageReference Include="BenchmarkDotNet" Version="0.13.1" />
-      <PackageReference Include="Disqord" Version="1.0.0-12302021-165" />
-      <PackageReference Include="Disqord.Bot" Version="1.0.0-12302021-165" />
-      <PackageReference Include="Disqord.Core" Version="1.0.0-12302021-165" />
+      <PackageReference Include="Disqord" Version="1.0.0-176" />
+      <PackageReference Include="Disqord.Bot" Version="1.0.0-176" />
+      <PackageReference Include="Disqord.Core" Version="1.0.0-176" />
       <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
       <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.1.0-1.final" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
