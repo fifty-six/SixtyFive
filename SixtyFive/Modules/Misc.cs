@@ -37,6 +37,10 @@ namespace SixtyFive.Modules
             if (!TimeSpan.TryParse(time, out var ts))
                 return Err.AsEmbed("Unable to parse time!");
 
+            if (ts.TotalMilliseconds < 0) {
+                return Err.AsEmbed("nope");
+            }
+
             await Task.Delay((int) ts.TotalMilliseconds);
 
             var msg = new LocalMessage()
