@@ -224,6 +224,7 @@ namespace SixtyFive.Modules
         }
 
         [Command("eval")]
+        [RunMode(RunMode.Parallel)]
         [SuppressMessage("ReSharper.DPA", "DPA0003: Excessive memory allocations in LOH")]
         public async Task<Result> Eval([Remainder] string msg)
         {

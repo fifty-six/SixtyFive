@@ -41,16 +41,19 @@ namespace SixtyFive.Modules
                 return Err.AsEmbed("nope");
             }
 
-            await Task.Delay((int) ts.TotalMilliseconds);
+            await using (Context.BeginYield()) 
+            {
+                await Task.Delay((int) ts.TotalMilliseconds);
 
-            var msg = new LocalMessage()
-              .WithContent("made you look")
-              .WithAllowedMentions(
-                    new LocalAllowedMentions()
-                      .WithMentionRepliedUser()
-              );
+                var msg = new LocalMessage()
+                  .WithContent("made you look")
+                  .WithAllowedMentions(
+                        new LocalAllowedMentions()
+                          .WithMentionRepliedUser()
+                  );
 
-            await Reply(msg);
+                await Reply(msg);
+            }
 
             return new Ok();
         }
