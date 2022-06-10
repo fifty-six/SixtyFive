@@ -58,6 +58,13 @@ namespace SixtyFive.Modules
             return new Ok();
         }
 
+        [Command("choice", "choose", "rng", "rnd")]
+        public Result Choice(params string[] args) {
+            var rnd = Context.GetRequiredService<Random>();
+
+            return Ok.AsEmbed(args[rnd.Next(args.Length)]);
+        }
+
         [Command("help")]
         public Result Help()
         {
