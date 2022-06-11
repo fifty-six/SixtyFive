@@ -72,7 +72,7 @@ namespace SixtyFive
                 .AddSingleton<HttpClient>()
                 .AddSingleton<TcpClient>()
                 .AddSingleton<Godbolt>()
-                .AddSingleton<Sniper>()
+                .AddSingleton<Random>()
                 .AddSingleton<IAsyncInitialized>(x => x.GetRequiredService<Godbolt>())
                 .BuildServiceProvider();
     }

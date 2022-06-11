@@ -104,19 +104,6 @@ namespace SixtyFive.Modules
             }
         }
 
-        [Command("snipe")]
-        public Result Snipe()
-        {
-            var sniper = Context.GetRequiredService<Sniper>();
-
-            if (!sniper.LastDeleted.TryGetValue((Context.GuildId, Context.ChannelId), out CachedUserMessage? msg))
-                return Ok.AsEmbed("No last message saved.");
-
-            LocalMessage copy = msg.CopyToEmbed(null, Util.Utilities.Copy.IgnoreAttachments);
-
-            return new Ok(copy);
-        }
-
         [Command("help")]
         public Result Help([Remainder] string command)
         {

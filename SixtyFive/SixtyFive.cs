@@ -65,27 +65,7 @@ namespace SixtyFive
 
             await Task.WhenAll(services.Select(x => x.Initialize(Services, Logger)));
 
-            MessageDeleted += Snipe;
-
             await base.RunAsync(ct);
-        }
-
-        private ValueTask Snipe(object sender, MessageDeletedEventArgs e)
-        {
-            if (e.GuildId is not Snowflake guild_id)
-                return ValueTask.CompletedTask;
-            
-            if (e.Message is null)
-                return ValueTask.CompletedTask;
-
-            if (e.Message.Author.Id == CurrentUser.Id)
-                return ValueTask.CompletedTask;
-            
-            var sniper = Services.GetRequiredService<Sniper>();
-
-            sniper.LastDeleted[(guild_id, e.ChannelId)] = e.Message;
-            
-            return ValueTask.CompletedTask;
         }
 
         public override DiscordCommandContext CreateCommandContext(IPrefix prefix, string input, IGatewayUserMessage message, CachedMessageGuildChannel channel)

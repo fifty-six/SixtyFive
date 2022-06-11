@@ -54,18 +54,18 @@ namespace SixtyFive.Util
             IgnoreAttachments
         }
 
-        public static LocalMessage CopyToEmbed(this IUserMessage pin, Snowflake? guild_id, Copy copy_type = Copy.CopyAttachments)
+        public static LocalMessage CopyToEmbed(this IUserMessage orig, Snowflake? guild_id, Copy copy_type = Copy.CopyAttachments)
         {
             var msg = new LocalMessage();
 
             LocalEmbed? embed = new LocalEmbed()
-                                .WithAuthor(pin.Author)
-                                .WithDescription(pin.Content)
-                                .WithTimestamp(pin.CreatedAt());
+                                .WithAuthor(orig.Author)
+                                .WithDescription(orig.Content)
+                                .WithTimestamp(orig.CreatedAt());
 
             if (guild_id is Snowflake id)
             {
-                string? link = Discord.MessageJumpLink(id, pin.ChannelId, pin.Id);
+                string? link = Discord.MessageJumpLink(id, orig.ChannelId, orig.Id);
 
                 embed.WithFields
                 (
@@ -79,15 +79,15 @@ namespace SixtyFive.Util
             if (copy_type != Copy.CopyAttachments)
                 return msg.WithEmbeds(embed);
 
-            if (pin.Embeds.FirstOrDefault(x => !string.IsNullOrEmpty(x.Image?.Url)) is IEmbed image)
+            if (orig.Embeds.FirstOrDefault(x => !string.IsNullOrEmpty(x.Image?.Url)) is IEmbed image)
                 embed.WithImageUrl(image.Image.Url);
-            else if (pin.Embeds.FirstOrDefault(x => x.Type == "image") is IEmbed url_image)
+            else if (orig.Embeds.FirstOrDefault(x => x.Type == "image") is IEmbed url_image)
                 embed.WithImageUrl(url_image.Url);
 
-            if (!pin.Attachments.Any())
+            if (!orig.Attachments.Any())
                 return msg.WithEmbeds(embed);
 
-            foreach (IAttachment attachment in pin.Attachments)
+            foreach (IAttachment attachment in orig.Attachments)
             {
                 if (attachment.ContentType?.StartsWith("image/") ?? false)
                     embed.WithImageUrl(attachment.ProxyUrl);
