@@ -81,7 +81,7 @@ namespace SixtyFive.Modules
         }
 
         [Command("pins")]
-        public async Task<Result> MovePins(ITextChannel from, ITextChannel to)
+        public async Task<Result> MovePins(IMessageGuildChannel from, IMessageGuildChannel to)
         {
             IReadOnlyList<IUserMessage>? pins = await from.FetchPinnedMessagesAsync();
 
