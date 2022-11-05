@@ -41,6 +41,15 @@ namespace SixtyFive.Modules
                 return Err.AsEmbed("nope");
             }
 
+            var info = new LocalMessage()
+                    .WithContent($"Ok, I'll remind you <t:{(DateTimeOffset.UtcNow + ts).ToUnixTimeSeconds()}:R>.")
+                    .WithAllowedMentions(
+                        new LocalAllowedMentions()
+                           .WithMentionRepliedUser()
+                    );
+
+            await Reply(info);
+
             await using (Context.BeginYield()) 
             {
                 await Task.Delay((int) ts.TotalMilliseconds);
@@ -60,6 +69,9 @@ namespace SixtyFive.Modules
 
         [Command("choice", "choose", "rng", "rnd")]
         public Result Choice(params string[] args) {
+            if (args.Length == 0)
+                return Err.AsEmbed("<:worrygator:1034869555903856771>");
+
             var rnd = Context.GetRequiredService<Random>();
 
             return Ok.AsEmbed(args[rnd.Next(args.Length)]);
