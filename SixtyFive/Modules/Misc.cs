@@ -7,16 +7,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
 using Disqord.Bot;
-using Disqord.Gateway;
 using Disqord.Http;
 using Disqord.Rest;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Linq;
 using Qmmands;
+using Quartz;
 using SixtyFive.Results;
-using SixtyFive.Services;
-using SixtyFive.Util;
 
 namespace SixtyFive.Modules
 {
@@ -50,20 +48,24 @@ namespace SixtyFive.Modules
 
             await Reply(info);
 
-            await using (Context.BeginYield()) 
-            {
-                await Task.Delay((int) ts.TotalMilliseconds);
+            var job = JobBuilder.Create<RemindJob>()
+                .WithIdentity($"Reminder{Context.Message.Id}", "Reminders")
+                .UsingJobData(new JobDataMap
+                {
+                    ["Message"] = Context.Message.Id,
+                    ["Channel"] = Context.ChannelId,
+                })
+                .Build();
 
-                var msg = new LocalMessage()
-                  .WithContent("made you look")
-                  .WithAllowedMentions(
-                        new LocalAllowedMentions()
-                          .WithMentionRepliedUser()
-                  );
+            var trigger = TriggerBuilder.Create()
+                .WithIdentity($"Trigger{Context.Message.Id}", "Reminders")
+                .StartAt(DateTimeOffset.Now + ts)
+                .Build();
 
-                await Reply(msg);
-            }
+            var scheduler = await Context.GetRequiredService<ISchedulerFactory>().GetScheduler();
 
+            await scheduler.ScheduleJob(job, trigger);
+            
             return new Ok();
         }
 

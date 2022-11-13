@@ -2,7 +2,6 @@
 using System.IO;
 using System.Net.Http;
 using System.Net.Sockets;
-using System.Runtime;
 using System.Threading;
 using System.Threading.Tasks;
 using Disqord;
@@ -13,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using SixtyFive.Services;
 using Disqord.Bot.Hosting;
 using Microsoft.Extensions.Hosting;
+using Quartz;
 
 namespace SixtyFive
 {
@@ -69,6 +69,8 @@ namespace SixtyFive
 
         private static void ConfigureServices(HostBuilderContext ctx, IServiceCollection scol) =>
             scol
+                .AddQuartz(q => q.UseMicrosoftDependencyInjectionJobFactory())
+                .AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true)
                 .AddSingleton<HttpClient>()
                 .AddSingleton<TcpClient>()
                 .AddSingleton<Godbolt>()

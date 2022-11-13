@@ -11,7 +11,7 @@ namespace SixtyFive
     {
         public ILogger Logger { get; }
 
-        public new SixtyFive Bot { get; }
+        public new SixtyFive Bot { get; set; }
 
         public HttpClient HttpClient { get; }
         
