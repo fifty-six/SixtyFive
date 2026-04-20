@@ -2,11 +2,15 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>net6</TargetFramework>
+        <TargetFramework>net9</TargetFramework>
         <LangVersion>preview</LangVersion>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <WarningsAsErrors>true</WarningsAsErrors>
+        <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
+        <RestoreAdditionalProjectSources>
+            https://www.myget.org/F/disqord/api/v3/index.json
+        </RestoreAdditionalProjectSources>
         
         <!-- 
             Tiered compilation makes decompilation only get the lower tier, 
@@ -21,7 +25,7 @@
       <PackageReference Include="Disqord.Bot" Version="1.0.0-176" />
       <PackageReference Include="Disqord.Core" Version="1.0.0-176" />
       <PackageReference Include="JetBrains.Annotations" Version="2021.3.0" />
-      <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.1.0-1.final" />
+      <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.8.0-2.final" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
@@ -31,9 +35,12 @@
       <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="6.0.0" />
       <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="6.0.0" />
       <PackageReference Include="Qmmands" Version="5.0.1" />
-      <PackageReference Include="Quartz" Version="3.5.0" />
-      <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.5.0" />
-      <PackageReference Include="Quartz.Extensions.Hosting" Version="3.5.0" />
+      <PackageReference Include="Npgsql" Version="8.0.0-rc.2" />
+      <PackageReference Include="Quartz" Version="3.7.0" />
+      <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.7.0" />
+      <PackageReference Include="Quartz.Extensions.Hosting" Version="3.7.0" />
+      <PackageReference Include="Quartz.Serialization.Json" Version="3.7.0" />
+      <PackageReference Include="TimeSpanParserUtil" Version="1.2.0" />
     </ItemGroup>
 
 </Project>

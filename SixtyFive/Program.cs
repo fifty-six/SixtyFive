@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Net.Sockets;
@@ -55,7 +55,7 @@ namespace SixtyFive
                                 (
                                     (ctx, bot) =>
                                     {
-                                        bot.Activities = new[] { new LocalActivity("the screams of children", ActivityType.Listening) };
+                                        bot.Activities = new[] { new LocalActivity("the voices", ActivityType.Listening) };
                                         bot.Token = ctx.Configuration["Token"];
                                         bot.Prefixes = new[] { "." };
                                     }
@@ -69,7 +69,15 @@ namespace SixtyFive
 
         private static void ConfigureServices(HostBuilderContext ctx, IServiceCollection scol) =>
             scol
-                .AddQuartz(q => q.UseMicrosoftDependencyInjectionJobFactory())
+	        .AddQuartz(q =>
+                {
+                    q.UseMicrosoftDependencyInjectionJobFactory();
+                    q.UsePersistentStore(s =>
+                    {
+                        s.UseNewtonsoftJsonSerializer();
+                        s.UsePostgres(p => p.ConnectionString = "User ID=quartz;Password=-DmYWu#76Y3ri)u~-jo{E?Wa/J9rM,QC;Host=db;Port=5432;Database=quartz");
+                    });
+                })
                 .AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true)
                 .AddSingleton<HttpClient>()
                 .AddSingleton<TcpClient>()

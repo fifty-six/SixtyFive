@@ -28,6 +28,7 @@ namespace SixtyFive.Modules
     [PublicAPI]
     public class Code : DiscordModuleBase<CommandContext>
     {
+	    /*
         [Command("disasm", "disassemble")]
         public async Task<Result> Diassemble([Remainder] string msg)
         {
@@ -119,6 +120,7 @@ namespace SixtyFive.Modules
                 ctx.Unload();
             }
         }
+    */
 
         [PublicAPI, Group("godbolt")]
         public class GodboltCommands : DiscordModuleBase<CommandContext>
