@@ -21,8 +21,9 @@ public class RemindJob : IJob
     {
         try
         {
-            var src = (Snowflake) context.MergedJobDataMap.Get("Message");
-            var channel = (Snowflake) context.MergedJobDataMap.Get("Channel");
+            // Quartz serializes Snowflakes to boxed Int64s for whatever reason, thus we unbox and then cast.
+            var src = (Snowflake) (ulong) (long) context.MergedJobDataMap.Get("Message");
+            var channel = (Snowflake) (ulong) (long) context.MergedJobDataMap.Get("Channel");
 
             LocalMessage? msg = new LocalMessage()
                 .WithContent("made you look")
