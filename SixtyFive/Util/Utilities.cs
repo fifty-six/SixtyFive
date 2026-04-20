@@ -8,7 +8,8 @@ namespace SixtyFive.Util
     {
         public static string ExtractCode(string code)
         {
-            code = code.Trim();
+            // PDL inserted by discord now (??)
+            code = code.Trim().Trim('\u2069');
 
             if (!code.StartsWith("```") || !code.EndsWith("```"))
                 return code;
