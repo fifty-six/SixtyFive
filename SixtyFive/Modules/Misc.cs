@@ -190,7 +190,25 @@ namespace SixtyFive.Modules
         }
 
         [Command("link")]
-        public Result LinkEmote(ICustomEmoji emote)
+        public Result Link() {
+            if (Context.Message.Stickers is not [var sticker]) {
+                    return Err.AsEmbed("This command requires an emote or sticker.");
+            }
+
+            var url = Discord.Cdn.GetStickerUrl(sticker.Id);
+
+            var builder = new LocalEmbed
+            {
+                Title = sticker.Name,
+                ImageUrl = url,
+                Description = $"[Link]({url})"
+            };
+
+            return new Ok(builder);
+        }
+
+        [Command("link")]
+        public Result Link(ICustomEmoji emote)
         {
             string url = Discord.Cdn.GetCustomEmojiUrl(emote.Id, CdnAssetFormat.Automatic);
 
