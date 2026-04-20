@@ -30,17 +30,28 @@ namespace SixtyFive.Modules
         }
 
         [Command("remind")]
-        public async Task<Result> Remind(string time) 
+        public async Task<Result> Remind([Remainder] string time) 
         {
-            if (!TimeSpan.TryParse(time, out var ts))
+            if (!TimeSpanParserUtil.TimeSpanParser.TryParse(time, out var ts))
                 return Err.AsEmbed("Unable to parse time!");
 
             if (ts.TotalMilliseconds < 0) {
                 return Err.AsEmbed("nope");
             }
 
+	    DateTimeOffset res;
+
+	    try 
+	    {
+		    res = DateTimeOffset.UtcNow + ts;
+	    } 
+	    catch (ArgumentOutOfRangeException) 
+	    {
+		    return Err.AsEmbed("you'll be dead by then dwai");
+	    }
+
             var info = new LocalMessage()
-                    .WithContent($"Ok, I'll remind you <t:{(DateTimeOffset.UtcNow + ts).ToUnixTimeSeconds()}:R>.")
+                    .WithContent($"Ok, I'll remind you <t:{res.ToUnixTimeSeconds()}:R>.")
                     .WithAllowedMentions(
                         new LocalAllowedMentions()
                            .WithMentionRepliedUser()
